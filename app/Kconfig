@@ -1,0 +1,32 @@
+# Copyright (c) 2026 Hubble Network, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+menu "Hubble xG24 dual-mode demo options"
+
+config HUBBLE_DEVICE_KEY
+	string "Cryptography key in base64"
+	default ""
+	help
+	  Hubble device's cryptographic key.
+
+config APP_SAT_DEBUG
+	bool "Transmit to the satellite 120 s after each beacon period starts"
+	help
+	  Set the satellite timer to 2 minutes instead of waiting for the
+	  next satellite pass overhead. Use this on the bench to check the
+	  satellite transmission. Do not deploy a device with this enabled.
+
+config APP_SAT_RETRY_SEC
+	int "Retry period after a pass prediction failure, in seconds"
+	default 3600
+	help
+	  If the next satellite pass cannot be computed, the device keeps
+	  beaconing and tries again after this period.
+
+endmenu
+
+source "Kconfig.zephyr"
+
+module = APP
+module-str = APP
+source "subsys/logging/Kconfig.template.log_config"

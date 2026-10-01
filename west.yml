@@ -1,0 +1,38 @@
+# Copyright (c) 2026 Hubble Network, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+# Workspace manifest for the xG24 dual-stack demo.
+#
+# Keep the Zephyr revision equal to the one in the SDK's own west.yml, the
+# version that SDK release was tested against. The allowlist keeps
+# `west update` to the modules an EFR32xG24 build needs instead of every
+# Zephyr HAL.
+
+manifest:
+  remotes:
+    - name: zephyrproject-rtos
+      url-base: https://github.com/zephyrproject-rtos
+    - name: hubble
+      url-base: https://github.com/HubbleNetwork
+
+  projects:
+    - name: zephyr
+      remote: zephyrproject-rtos
+      revision: v4.4.0
+      west-commands: scripts/west-commands.yml
+      import:
+        name-allowlist:
+          - cmsis
+          - cmsis_6
+          - hal_silabs
+          - mbedtls
+          - tf-psa-crypto
+          - picolibc
+          - segger
+    - name: hubble-device-sdk
+      remote: hubble
+      revision: v3.1.0
+      path: modules/lib/hubble-device-sdk
+
+  self:
+    path: hubble-demo-xg24-dual-stack

@@ -1,0 +1,84 @@
+# Copyright (c) 2026 Hubble Network, Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          path: hubble-demo-xg24-dual-stack
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      # west.yml at the repo root fetches Zephyr, the Hubble Device SDK and
+      # the modules an EFR32xG24 build needs.
+      - name: Set up Zephyr workspace
+        uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          app-path: hubble-demo-xg24-dual-stack
+          toolchains: arm-zephyr-eabi
+
+      - name: Fetch binary blobs
+        run: west blobs fetch hal_silabs
+
+      # CI has no device key. The image builds and runs, but its packets do
+      # not decrypt in Dash. Build with your own key to use it.
+      - name: Build
+        run: |
+          west build -b xg24_rb4187c hubble-demo-xg24-dual-stack/app -d build \
+            -- -DCONFIG_COMPILER_WARNINGS_AS_ERRORS=y
+          cp build/zephyr/zephyr.hex hubble-demo-xg24-dual-stack-nokey.hex
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: hubble-demo-xg24-dual-stack
+          path: hubble-demo-xg24-dual-stack-nokey.hex
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: hubble-demo-xg24-dual-stack
+
+      - name: Attach to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NOTES: >-
+            `hubble-demo-xg24-dual-stack-nokey.hex` is built without a device
+            key. It runs, but its packets do not decrypt in Dash. To send data
+            to your Dash org, build with your own device key as described in
+            the README.
+        run: |
+          if ! gh release view "${GITHUB_REF_NAME}" > /dev/null 2>&1; then
+            gh release create "${GITHUB_REF_NAME}" --generate-notes --notes "${NOTES}"
+          fi
+          gh release upload "${GITHUB_REF_NAME}" hubble-demo-xg24-dual-stack-nokey.hex --clobber

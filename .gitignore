@@ -1,0 +1,9 @@
+build*/
+.cache/
+__pycache__/
+
+# Local editor settings
+.vscode/
+
+# Per-device secrets. Never commit a device key.
+*.key

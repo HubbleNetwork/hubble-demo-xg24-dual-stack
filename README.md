@@ -106,9 +106,9 @@ Advertising parameters:
 
 | Parameter | Value | Set by |
 | --- | --- | --- |
-| Beacon interval | 1000–1200 ms | `ADV_INTERVAL_MIN_MS` / `ADV_INTERVAL_MAX_MS` in [app/src/app_ble.c](app/src/app_ble.c) |
+| Beacon interval | 1500 ms | `ADV_INTERVAL_MS` in [app/src/app_ble.c](app/src/app_ble.c) |
 | Provisioning interval (connectable) | 100–150 ms | GAP fast interval `BT_GAP_ADV_FAST_INT_MIN_2` / `BT_GAP_ADV_FAST_INT_MAX_2` in [app/src/app_ble.c](app/src/app_ble.c) |
-| Tx power | 0 dBm | `CONFIG_BT_CTLR_TX_PWR_0` in [app/prj.conf](app/prj.conf) |
+| Tx power | +8 dBm | `CONFIG_BT_CTLR_TX_PWR_ANTENNA` in [app/prj.conf](app/prj.conf) |
 
 ## Provision and resync ephemeris
 
